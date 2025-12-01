@@ -1,0 +1,74 @@
+@startuml
+!include <C4/C4_Component>
+
+title Core Backend + ATS/Interview - Component Diagram
+
+Container_Boundary(core, "Core Backend + ATS/Interview (Cloud Run)") {
+  Component(api, "API Controllers", "REST/GraphQL", "HTTP endpoints for UI & integrations.")
+  Component(authz, "Auth & Authorization", "", "Role-based access control using Identity tokens.")
+
+  Component(roleIntake, "Role Intake & JobRole Management", "", "Define roles, priorities, skills, scorecard templates.")
+  Component(candMgmt, "Candidate & CRM Management", "", "Manage candidates, sources, statuses, AI summaries.")
+  Component(appMgmt, "Application & Pipeline Management", "", "Manage applications and stages.")
+  Component(workflow, "Workflow & Adaptive Engine", "", "Configurable workflows and stage rules.")
+
+  Component(anonScreen, "Anonymous Screening", "", "Hide PII, generate anonymised profiles.")
+  Component(rankOrch, "Candidate Ranking Orchestrator", "", "Call ML models to rank candidates.")
+
+  Component(intMgmt, "Interview Management", "", "Schedule/update interviews, meeting links.")
+  Component(scorecard, "Scorecard Management", "", "Mandated scorecards for interviews.")
+  Component(sla, "Feedback SLA Monitor", "", "Monitor time-in-stage, trigger alerts.")
+
+  Component(notify, "Notification & Task Component", "", "Create notifications/tasks, publish events.")
+  Component(biasPub, "Bias Analytics Publisher", "", "Publish anonymised events for bias detection.")
+
+  Component(repos, "Repository Layer", "", "Persistence abstraction over Cloud SQL & Firestore.")
+}
+
+ContainerDb(sql, "Cloud SQL (PostgreSQL)", "Relational DB", "")
+ContainerDb(fs, "Firestore", "NoSQL Store", "")
+Container(pubsub, "Event Bus", "Pub/Sub", "")
+Container(ai_twin, "AI Twin / Agent Service", "Cloud Run", "Agentic AI orchestration.")
+Container(ai_platform, "Vertex AI", "AI Platform", "")
+
+Rel(api, authz, "Validates tokens & roles")
+Rel(api, roleIntake, "Calls")
+Rel(api, candMgmt, "Calls")
+Rel(api, appMgmt, "Calls")
+Rel(api, intMgmt, "Calls")
+Rel(api, scorecard, "Calls")
+Rel(api, workflow, "Calls")
+
+Rel(roleIntake, repos, "CRUD JobRole")
+Rel(candMgmt, repos, "CRUD Candidate")
+Rel(appMgmt, repos, "CRUD Application & Stage")
+Rel(intMgmt, repos, "CRUD Interview")
+Rel(scorecard, repos, "CRUD Scorecard")
+Rel(workflow, repos, "CRUD WorkflowStage")
+
+Rel(appMgmt, anonScreen, "Trigger anonymised screening")
+Rel(anonScreen, ai_twin, "Request PII masking")
+Rel(anonScreen, repos, "Store anonymised data")
+
+Rel(appMgmt, rankOrch, "Request ranking")
+Rel(rankOrch, ai_twin, "Call AI ranking")
+Rel(rankOrch, repos, "Persist ml_rank_score")
+Rel(rankOrch, pubsub, "Publish ApplicationRanked")
+
+Rel(intMgmt, ai_twin, "Request scheduling/rescheduling")
+Rel(scorecard, workflow, "Validate stage transitions")
+
+Rel(sla, appMgmt, "Read time-in-stage")
+Rel(sla, intMgmt, "Read interview completion")
+Rel(sla, notify, "Create SLA breach tasks")
+
+Rel(notify, pubsub, "Publish NotificationRequested")
+Rel(biasPub, pubsub, "Publish BiasAnalyticsEvent")
+
+Rel(repos, sql, "Reads/Writes")
+Rel(repos, fs, "Reads/Writes")
+
+Rel(pubsub, ai_twin, "Delivers events")
+Rel(pubsub, ai_platform, "Analytics events\n(via Dataflow/BigQuery)")
+
+@enduml

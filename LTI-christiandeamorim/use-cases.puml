@@ -1,0 +1,79 @@
+@startuml
+title Use Case Diagram: Talent Operating System Core Functionalities
+
+left to right direction
+
+' Actors
+actor "Visitor" as V
+actor "Logged-in User" as U
+actor "Recruiter" as R
+actor "Hiring Manager" as HM
+actor "AI Agent" as AI
+
+' Inheritance
+V <|-- U : Authentication
+U <|-- R
+U <|-- HM
+
+note right of V
+  Unauthenticated users (Visitors)
+  must log in to access
+  core functionalities.
+end note
+
+package "Talent Operating System" {
+    usecase "Login" as UC_Login
+
+    package "1. Role Intake & Alignment" {
+        usecase "Define Role Priorities & Criteria" as UC_RoleDef
+        note bottom of UC_RoleDef
+            Collaboratively define responsibilities,
+            priorities, and evaluation criteria.
+        end note
+    }
+
+    package "2. Anonymous Screening & Ranking" {
+        usecase "View Anonymized Rankings" as UC_ViewRank
+        usecase "Auto-Hide PII" as UC_HidePII
+        usecase "ML Candidate Ranking" as UC_MLRank
+        
+        note bottom of UC_HidePII
+            Hides names, photos, etc.
+            to reduce bias.
+        end note
+    }
+
+    package "3. Agentic Interview Management" {
+        usecase "Manage Interview Process" as UC_ManageInt
+        usecase "Auto-Schedule Interviews" as UC_AutoSched
+        usecase "Complete Mandated Scorecard" as UC_Scorecard
+        
+        note bottom of UC_AutoSched
+            AI handles calendar coordination
+            with candidates.
+        end note
+    }
+}
+
+' Relationships
+V --> UC_Login
+
+' Role Intake
+R --> UC_RoleDef
+HM --> UC_RoleDef
+
+' Screening
+R --> UC_ViewRank
+AI --> UC_HidePII
+AI --> UC_MLRank
+UC_ViewRank ..> UC_HidePII : <<include>>
+UC_ViewRank ..> UC_MLRank : <<include>>
+
+' Interview Management
+R --> UC_ManageInt
+AI --> UC_AutoSched
+UC_ManageInt ..> UC_AutoSched : <<include>>
+R --> UC_Scorecard
+HM --> UC_Scorecard
+
+@enduml

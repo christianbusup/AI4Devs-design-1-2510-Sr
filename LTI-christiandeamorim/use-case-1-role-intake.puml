@@ -1,0 +1,35 @@
+@startuml
+title Use Case 1: Role Intake & Alignment
+
+left to right direction
+
+' Actors
+actor "Visitor" as V
+actor "Logged-in User" as U
+actor "Recruiter" as R
+actor "Hiring Manager" as HM
+
+' Inheritance
+V <|-- U : Authentication
+U <|-- R
+U <|-- HM
+
+note right of V
+  Unauthenticated users (Visitors)
+  must log in to access
+  core functionalities.
+end note
+
+package "1. Role Intake & Alignment" {
+    usecase "Define Role Priorities & Criteria" as UC_RoleDef
+    note bottom of UC_RoleDef
+        Collaboratively define responsibilities,
+        priorities, and evaluation criteria.
+    end note
+}
+
+' Relationships
+R --> UC_RoleDef
+HM --> UC_RoleDef
+
+@enduml

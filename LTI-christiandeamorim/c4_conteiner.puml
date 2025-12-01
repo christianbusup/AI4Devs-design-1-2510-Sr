@@ -1,0 +1,77 @@
+@startuml
+!include <C4/C4_Container>
+
+title LTI Talent OS - Container Diagram
+
+Person(recruiter, "Recruiter")
+Person(hm, "Hiring Manager")
+Person(interviewer, "Interviewer")
+Person(admin, "Admin / HR Ops")
+Person(candidate, "Candidate")
+
+System_Boundary(lti, "LTI Talent OS") {
+  Container(web, "Web Frontend", "React/Next.js", "Provides UI for all personas.")
+  Container(gw, "API Gateway / LB", "GCP API Gateway + HTTPS LB", "Routing, rate limiting, logging.")
+  Container(auth, "Auth & Identity", "Identity Platform", "SSO, MFA, user identity.")
+
+  Container(core, "Core Backend Service", "Cloud Run / REST", "Users, Job Roles, Candidates, Workflows, Role Intake.")
+  Container(ats, "ATS & Interview Service", "Cloud Run / REST", "Applications, Interviews, Scorecards, SLAs.")
+  Container(ai_twin, "AI Twin / Agent Service", "Cloud Run", "Agentic AI orchestration: scheduling, ranking, outreach.")
+  Container(integration, "Integration Service", "Cloud Functions / Cloud Run", "HRIS, sourcing, comms connectors.")
+
+  Container(pubsub, "Event Bus", "Pub/Sub", "Domain events for AI & analytics.")
+
+  ContainerDb(sql, "Relational DB", "Cloud SQL (PostgreSQL)", "Core transactional data.")
+  ContainerDb(fs, "NoSQL Store", "Firestore", "Templates, real-time docs, AI summaries.")
+  ContainerDb(storage, "Object Storage", "Cloud Storage", "Resumes, attachments.")
+  ContainerDb(bq, "Analytics Warehouse", "BigQuery", "Historical analytics & bias detection.")
+
+  Container(ai_platform, "AI Platform", "Vertex AI + Gemini", "Models, embeddings, chat, summarization.")
+  Container(dataflow, "Data Pipeline", "Dataflow", "ETL to BigQuery.")
+}
+
+System_Ext(hris, "HRIS / Payroll", "")
+System_Ext(cal, "Calendar Providers", "")
+System_Ext(video, "Video Conferencing", "")
+System_Ext(sourcing, "Sourcing Platforms", "")
+System_Ext(comms, "Communication Platforms", "")
+
+Rel(recruiter, web, "Uses")
+Rel(hm, web, "Uses")
+Rel(interviewer, web, "Uses")
+Rel(admin, web, "Configures, monitors")
+Rel(candidate, web, "Applies & interacts")
+
+Rel(web, gw, "HTTPS")
+Rel(gw, auth, "AuthN/AuthZ")
+Rel(gw, core, "Routes API calls")
+Rel(gw, ats, "Routes API calls")
+Rel(gw, ai_twin, "Routes AI actions")
+
+Rel(core, sql, "Reads/Writes")
+Rel(core, fs, "Reads/Writes")
+Rel(ats, sql, "Reads/Writes")
+Rel(ats, fs, "Reads/Writes")
+
+Rel(core, pubsub, "Publishes domain events")
+Rel(ats, pubsub, "Publishes domain events")
+
+Rel(ai_twin, pubsub, "Subscribes to events")
+Rel(ai_twin, ai_platform, "Sends prompts / features")
+Rel(ai_twin, cal, "Schedules interviews")
+Rel(ai_twin, video, "Creates meeting links")
+Rel(ai_twin, comms, "Sends notifications")
+
+Rel(integration, hris, "Sync hires", "APIs / webhooks")
+Rel(integration, sourcing, "Ingest candidates", "APIs / webhooks")
+Rel(integration, core, "Uses APIs")
+Rel(integration, pubsub, "Publishes external events")
+
+Rel(sql, dataflow, "Streaming/batch data")
+Rel(fs, dataflow, "Streaming/batch data")
+Rel(pubsub, dataflow, "Streams")
+Rel(dataflow, bq, "Load analytics data")
+
+Rel(bq, ai_platform, "Training / bias detection data")
+
+@enduml

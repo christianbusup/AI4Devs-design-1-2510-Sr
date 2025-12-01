@@ -1,0 +1,42 @@
+@startuml
+title Use Case 3: Agentic Interview Management
+
+left to right direction
+
+' Actors
+actor "Visitor" as V
+actor "Logged-in User" as U
+actor "Recruiter" as R
+actor "Hiring Manager" as HM
+actor "AI Agent" as AI
+
+' Inheritance
+V <|-- U : Authentication
+U <|-- R
+U <|-- HM
+
+note right of V
+  Unauthenticated users (Visitors)
+  must log in to access
+  core functionalities.
+end note
+
+package "3. Agentic Interview Management" {
+    usecase "Manage Interview Process" as UC_ManageInt
+    usecase "Auto-Schedule Interviews" as UC_AutoSched
+    usecase "Complete Mandated Scorecard" as UC_Scorecard
+    
+    note bottom of UC_AutoSched
+        AI handles calendar coordination
+        with candidates.
+    end note
+}
+
+' Relationships
+R --> UC_ManageInt
+AI --> UC_AutoSched
+UC_ManageInt ..> UC_AutoSched : <<include>>
+R --> UC_Scorecard
+HM --> UC_Scorecard
+
+@enduml

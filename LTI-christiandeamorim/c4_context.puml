@@ -1,0 +1,32 @@
+@startuml
+!include <C4/C4_Context>
+
+Person(recruiter, "Recruiter", "Manages pipelines, sourcing, screening.")
+Person(hm, "Hiring Manager", "Defines role priorities and evaluates candidates.")
+Person(interviewer, "Interviewer", "Conducts interviews and submits scorecards.")
+Person(admin, "Admin / HR Ops", "Configures workflows, SLAs and integrations.")
+Person(candidate, "Candidate", "Applies to roles and interacts with the AI Twin.")
+
+System_Boundary(boundary_lti, "LTI Talent Operating System") {
+  System(lti, "LTI Talent OS", "Integrated ATS/CRM/sourcing/onboarding platform with Agentic AI.")
+}
+
+System_Ext(hris, "HRIS / Payroll Systems", "Workday, ADP, BambooHR, etc.")
+System_Ext(cal, "Calendar Providers", "Google Calendar, Outlook, etc.")
+System_Ext(video, "Video Conferencing", "Zoom, Google Meet, MS Teams.")
+System_Ext(sourcing, "Sourcing Platforms", "LinkedIn, Indeed, etc.")
+System_Ext(comms, "Communication Platforms", "Slack, Microsoft Teams.")
+
+Rel(recruiter, lti, "Uses via web app")
+Rel(hm, lti, "Uses via web app")
+Rel(interviewer, lti, "Uses via web app")
+Rel(admin, lti, "Configures & monitors")
+Rel(candidate, lti, "Applies, checks status, interacts with AI Twin")
+
+Rel(lti, hris, "Sync hires, contracts, payroll data", "APIs / webhooks")
+Rel(lti, cal, "Schedule interviews", "OAuth + REST APIs")
+Rel(lti, video, "Create meeting links", "APIs")
+Rel(lti, sourcing, "Import & monitor candidates", "APIs / webhooks")
+Rel(lti, comms, "Send notifications & alerts", "Webhooks / bots")
+
+@enduml
